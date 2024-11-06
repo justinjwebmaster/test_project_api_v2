@@ -28,9 +28,17 @@ if ($uri === "$base_uri/messages" && $method === 'GET') {
   $id = $uri_part[4];
   $senderController->getSenderById($id);
 } elseif ($uri === "$base_uri/senders" && $method === "POST") {
-  $data = $_POST['data'];
-  $senderController->createSender($data);
-}else {
+  // Corriger le chemin pour lire depuis php://input
+  $data = json_decode(file_get_contents("php://input"), true);
+
+  // Vérifier que les données ont été correctement décodées
+  if (is_array($data)) {
+      $senderController->createSender($data);
+  } else {
+      header("HTTP/1.1 400 Bad Request");
+      echo json_encode(["error" => "Invalid JSON data"]);
+  }
+} else {
   header("HTTP/1.1 404 Not Found");
   echo json_encode(['error' => "Route not found"]);
 }
